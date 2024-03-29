@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:lifecycle_of_stateful_widget/pages/home_page.dart';
 import 'package:lifecycle_of_stateful_widget/pages/learn_scrolling.dart';
+import 'package:lifecycle_of_stateful_widget/pages/login_page.dart';
 import 'package:lifecycle_of_stateful_widget/pages/uzum_page.dart';
 
 void main(){
@@ -17,7 +18,7 @@ class MyApp extends StatelessWidget{
         useMaterial3: false,
       ),
       debugShowCheckedModeBanner: false,
-      home: const UzumPage(),
+      home: const LoginPage(),
     );
   }
 

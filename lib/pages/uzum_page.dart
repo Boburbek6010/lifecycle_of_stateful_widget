@@ -1,4 +1,9 @@
+import 'dart:developer';
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../data/product_list.dart';
 import '../models/product_model.dart';
@@ -12,116 +17,52 @@ class UzumPage extends StatefulWidget {
 
 class _UzumPageState extends State<UzumPage> {
 
+  bool isCamera = false;
+  bool isFileSelected = false;
+  String? path;
 
-
+  Future<void> getImage()async{
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    isFileSelected = false;
+    final picker = ImagePicker();
+    XFile? xFile = await picker.pickImage(source: isCamera ?ImageSource.camera : ImageSource.gallery);
+    if(xFile != null) {
+      await prefs.setString("image", xFile.path);
+      path = await read();
+      if(path != null){
+        isFileSelected = true;
+        setState(() {});
+      }
+    }
+  }
+  Future<String?> read()async{
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.getString("image");
+  }
+  @override
+  void didChangeDependencies() async{
+    path = await read();
+    if(path != null){
+      isFileSelected = true;
+      setState(() {});
+    }
+    super.didChangeDependencies();
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
-      body: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-
-          /// Banner 30%
-          Expanded(
-            flex: 3,
-            child: Column(
-              children: [
-                const SizedBox(height: 30,),
-                Row(
-                  children: [
-                    Container(
-                      color: Colors.grey,
-                      height: 50,
-                      width: MediaQuery.of(context).size.width*0.85,
-                    ),
-                    IconButton(
-                      onPressed: (){},
-                      icon: const Icon(Icons.favorite_border),
-                    )
-                  ],
-                ),
-                const SizedBox(height: 10,),
-                SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: Row(
-                    children: [
-                      banner("Reklama", context),
-                      banner("Reklama", context),
-                      banner("Reklama", context),
-                    ],
-                  ),
-                )
-              ],
-            )
+      body: Center(
+        child: InkWell(
+          onLongPress: ()async{
+            await getImage();
+            setState(() {});
+          },
+          child: CircleAvatar(
+            radius: 60,
+            backgroundImage: isFileSelected ?Image.file(File(path!)).image :Image.asset("assets/images/img.png").image,
           ),
-
-
-
-          /// Products 70%
-          Expanded(
-            flex: 7,
-            child: ListView.builder(
-              itemBuilder: (_, index){
-                return SizedBox(
-                  height: 300,
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      product(productList[index], context),
-                      product(productList[index], context),
-                    ],
-                  ),
-                );
-              },
-              itemCount: productList.length,
-            )
-          )
-        ],
+        ),
       ),
     );
   }
-}
-
-
-Widget banner (String name, BuildContext context){
-  return Container(
-    height: 130,
-    alignment: Alignment.center,
-    width: MediaQuery.of(context).size.width*0.9,
-    color: Colors.blueGrey,
-    margin: const EdgeInsets.symmetric(horizontal: 30),
-    child: Text(name, style: const TextStyle(
-      fontSize: 34,
-    ),),
-  );
-}
-
-
-Widget product(Product product, BuildContext context){
-  return Column(
-    children: [
-
-      /// 80 image
-      Expanded(
-        flex: 8,
-        child: Container(
-          height: double.infinity,
-          width: MediaQuery.of(context).size.width*0.48,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(12),
-            color: Colors.grey,
-          ),
-          child: Image.network(product.image),
-        ),
-      ),
-
-      /// 20 text
-      Expanded(
-        flex: 2,
-        child: Text(product.info)
-      ),
-    ],
-  );
 }
